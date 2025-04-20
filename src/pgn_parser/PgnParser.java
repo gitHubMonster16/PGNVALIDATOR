@@ -552,7 +552,7 @@ public class PgnParser {
         }
     }
     public static void main(String[] args) {
-        String PGNPath="C:\\Users\\comp\\Desktop\\chessJavaRefactoring-master\\PGNVALIDATOR\\src\\pgn_parser\\PGN_examples\\NOTVALIDsample1.pgn";
+        String PGNPath="C:\\Users\\comp\\Desktop\\chessJavaRefactoring-master\\PGNVALIDATOR\\src\\pgn_parser\\PGN_examples\\NOTVALIDsample7.pgn";
         System.out.println(ParsePGN(PGNPath));
     }
 }
