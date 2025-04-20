@@ -36,18 +36,14 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 	private static final String RESOURCES_WQUEEN_PNG = "/resources/wqueen.png";
 	private static final String RESOURCES_WPAWN_PNG = "/resources/wpawn.png";
 	private static final String RESOURCES_BPAWN_PNG = "/resources/bpawn.png";
-	
 	// Logical and graphical representations of board
 	private final Square[][] board;
     private final GameWindow g;
-    
     // List of pieces and whether they are movable
     public final LinkedList<Piece> Bpieces;
     public final LinkedList<Piece> Wpieces;
     public List<Square> movable;
-    
-    private boolean whiteTurn;
-
+    public boolean whiteTurn;
     private Piece currPiece;
     private int currX;
     private int currY;
@@ -89,7 +85,6 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         whiteTurn = true;
 
     }
-
     public int getCurrX() {
         return currX;
     }

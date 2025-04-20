@@ -1,6 +1,8 @@
 package pgn_parser;
 
-import models.Board;
+import controllers.GameWindow;
+import models.*;
+import models.enums.Color_Piece;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,8 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static models.enums.Color_Piece.BLACK;
+
 public class PgnParser {
-    private Board board;
+    private static Board board=new Board(new GameWindow("black","white",1,0,0));
     private static Set<Character> files = new HashSet<>(Set.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
     private static Set<Character> rank=new HashSet<>(Set.of('1','2','3','4','5','6','7','8'));
     private static Set<Character> pieces=new HashSet<>(Set.of('N','B'));
@@ -333,7 +337,128 @@ public class PgnParser {
 
         return movePairs;
     }
+
+    public static boolean PawnIsMovableToSquare(Square dest, Board board) {
+        boolean isWhiteTurn = board.getWhiteTurn();
+        Square[][] squares = board.getSquareArray();
+
+        // Check all squares for pawns of the current turn's color
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Square current = squares[y][x];
+                if (current.isOccupied()) {
+                    Piece piece = current.getOccupyingPiece();
+                    // Check if it's a pawn of the current player's color
+                    if (piece instanceof Pawn && piece.getColor() == (isWhiteTurn ? Color_Piece.WHITE : BLACK)) {
+                        // Get all legal moves for this pawn
+                        List<Square> legalMoves = piece.getLegalMoves(board);
+                        // Check if the destination is in the legal moves and passes check detection
+                        if (legalMoves.contains(dest)) {
+                                piece.move(dest);
+                                board.whiteTurn = !board.whiteTurn; // Switch turns
+                                return true;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("there is now such pawn move to square "+dest.toString()+"!");
+        return false;
+    }
+    public static boolean BishopIsMovableToSquare(Square dest, Board board) {
+        boolean isWhiteTurn = board.getWhiteTurn();
+        Square[][] squares = board.getSquareArray();
+
+        // Check all squares for bishops of the current turn's color
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Square current = squares[y][x];
+                if (current.isOccupied()) {
+                    Piece piece = current.getOccupyingPiece();
+                    // Check if it's a bishop of the current player's color
+                    if (piece instanceof Bishop && piece.getColor() == (isWhiteTurn ? Color_Piece.WHITE : BLACK)) {
+                        // Get all legal moves for this bishop
+                        List<Square> legalMoves = piece.getLegalMoves(board);
+                        // Check if the destination is in the legal moves and passes check detection
+                        if (legalMoves.contains(dest)) {
+                                // Execute the move
+                                piece.move(dest);
+                                board.whiteTurn = !board.whiteTurn; // Switch turns
+                                return true;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("there is now such bishop move to square "+dest.toString()+"!");
+        return false;
+    }
+    public static boolean KnightIsMovableToSquare(Square dest, Board board) {
+        boolean isWhiteTurn = board.getWhiteTurn();
+        Square[][] squares = board.getSquareArray();
+
+
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Square current = squares[y][x];
+                if (current.isOccupied()) {
+                    Piece piece = current.getOccupyingPiece();
+
+                    if (piece instanceof Knight && piece.getColor() == (isWhiteTurn ? Color_Piece.WHITE : BLACK)) {
+
+                        List<Square> legalMoves = piece.getLegalMoves(board);
+
+                        if (legalMoves.contains(dest)) {
+                            // Execute the move
+                            piece.move(dest);
+                            board.whiteTurn = !board.whiteTurn;
+                            return true;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("there is now such knight move to square "+dest.toString()+"!");
+        return false;
+    }
+    public static boolean KingIsMovableToSquare(Square dest, Board board) {
+        boolean isWhiteTurn = board.getWhiteTurn();
+        Square[][] squares = board.getSquareArray();
+
+
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Square current = squares[y][x];
+                if (current.isOccupied()) {
+                    Piece piece = current.getOccupyingPiece();
+
+                    if (piece instanceof King && piece.getColor() == (isWhiteTurn ? Color_Piece.WHITE : BLACK)) {
+
+                        List<Square> legalMoves = piece.getLegalMoves(board);
+
+                        if (legalMoves.contains(dest)) {
+                            // Execute the move
+                            piece.move(dest);
+                            board.whiteTurn = !board.whiteTurn;
+                            return true;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("there is now such castling move to square "+dest.toString()+"!");
+        return false;
+    }
+
+
     public static boolean ParseChessGame(String game){
+        board.initializePieces();
         boolean res=true;
         List<List<String>> moves=parseChessMoves(game);
         for(int i=0;i<moves.size();i++){
@@ -342,18 +467,50 @@ public class PgnParser {
                    System.out.println("Error:move "+(i+1)+"for "+col[j]+" has syntax problem!");
                    res=false;
                }
-               //if(condition){expression res=false;}
+               else if(moves.get(i).get(j).length()==2){
+                   Square dest=board.getSquare(moves.get(i).get(j));
+                   res=PawnIsMovableToSquare(dest,board);
+               }
+               else if(moves.get(i).get(j).length()==3){
+                   if(moves.get(i).get(j).charAt(0)=='B'){
+                       Square dest=board.getSquare(moves.get(i).get(j));
+                       res=BishopIsMovableToSquare(dest,board);
+                   }
+                   else if(moves.get(i).get(j).charAt(0)=='N'){
+                       Square dest=board.getSquare(moves.get(i).get(j));
+                       res=KnightIsMovableToSquare(dest,board);
+                   }
+                   else{
+                       if (board.whiteTurn){
+                           Square dest=board.getSquare("g1");
+                           res=KingIsMovableToSquare(dest,board);
+                       }
+                       else {
+                           Square dest=board.getSquare("g8");
+                           res=KingIsMovableToSquare(dest,board);
+                       }
+
+                   }
+
+               }
+               else{
+                   if (board.whiteTurn){
+                       Square dest=board.getSquare("c1");
+                       res=KingIsMovableToSquare(dest,board);
+                   }else{
+                       Square dest=board.getSquare("c8");
+                       res=KingIsMovableToSquare(dest,board);
+                   }
+               }
             }
         }
         return res;
     }
-
     private int[] notationToCoordinates(String square) {
         int file = square.charAt(0) - 'a';
         int rank = 8 - Character.getNumericValue(square.charAt(1));
         return new int[]{rank, file};
     }
-
     public static boolean ParsePGN(String gamePath) {
         BufferedReader reader = null;
         try {
@@ -401,6 +558,4 @@ public class PgnParser {
             }
         }
     }
-
-
 }

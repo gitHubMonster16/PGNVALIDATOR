@@ -99,6 +99,11 @@ public class Square extends JComponent {
             new PieceDraw(this.getOccupyingPiece()).draw(g,this.getX(),this.getY());
         }
     }
+    public String toString() {
+        char file = (char) ('a' + this.getX());
+        int rank = 8 - this.getY();
+        return String.format("%c%d", file, rank);
+    }
     @Override
     public int hashCode() {
         int prime = 31;
