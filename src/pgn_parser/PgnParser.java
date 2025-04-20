@@ -320,7 +320,6 @@ public class PgnParser {
 
         String cleaned = moves.replaceAll("\\d+\\.\\s*", "");
 
-
         String[] moveTokens = cleaned.split("\\s+");
 
         for (int i = 0; i < moveTokens.length; i += 2) {
@@ -451,7 +450,6 @@ public class PgnParser {
                 }
             }
         }
-
         System.out.println("there is now such castling move to square "+dest.toString()+"!");
         return false;
     }
@@ -463,6 +461,7 @@ public class PgnParser {
         List<List<String>> moves=parseChessMoves(game);
         for(int i=0;i<moves.size();i++){
             for(int j=0;j<2;j++){
+                if ( moves.get(i).get(j)== null) continue;
                if(!isMoveSyntaxRight(moves.get(i).get(j))){
                    System.out.println("Error:move "+(i+1)+"for "+col[j]+" has syntax problem!");
                    res=false;
@@ -473,11 +472,11 @@ public class PgnParser {
                }
                else if(moves.get(i).get(j).length()==3){
                    if(moves.get(i).get(j).charAt(0)=='B'){
-                       Square dest=board.getSquare(moves.get(i).get(j));
+                       Square dest=board.getSquare(moves.get(i).get(j).substring(1));
                        res=BishopIsMovableToSquare(dest,board);
                    }
                    else if(moves.get(i).get(j).charAt(0)=='N'){
-                       Square dest=board.getSquare(moves.get(i).get(j));
+                       Square dest=board.getSquare(moves.get(i).get(j).substring(1));
                        res=KnightIsMovableToSquare(dest,board);
                    }
                    else{
@@ -506,11 +505,6 @@ public class PgnParser {
         }
         return res;
     }
-    private int[] notationToCoordinates(String square) {
-        int file = square.charAt(0) - 'a';
-        int rank = 8 - Character.getNumericValue(square.charAt(1));
-        return new int[]{rank, file};
-    }
     public static boolean ParsePGN(String gamePath) {
         BufferedReader reader = null;
         try {
@@ -518,7 +512,6 @@ public class PgnParser {
             int count = 0;
             reader = new BufferedReader(new FileReader(gamePath));
             String line;
-
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
@@ -557,5 +550,9 @@ public class PgnParser {
                 System.err.println("Error closing file: " + e.getMessage());
             }
         }
+    }
+    public static void main(String[] args) {
+        String PGNPath="C:\\Users\\comp\\Desktop\\chessJavaRefactoring-master\\PGNVALIDATOR\\src\\pgn_parser\\PGN_examples\\NOTVALIDsample1.pgn";
+        System.out.println(ParsePGN(PGNPath));
     }
 }
