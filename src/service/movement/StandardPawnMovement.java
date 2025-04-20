@@ -35,8 +35,7 @@ public class StandardPawnMovement implements MovementLogic {
         // Capture moves
         addCaptureMoves(legalMoves, squares, x, y, forwardDir, color);
 
-        // En passant (would need board to track last move)
-        // addEnPassantMoves(legalMoves, board, x, y, forwardDir, color);
+
         return legalMoves;
     }
 

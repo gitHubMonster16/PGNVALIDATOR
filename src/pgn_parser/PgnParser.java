@@ -2,16 +2,20 @@ package pgn_parser;
 
 import models.Board;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class PgnParser {
     private Board board;
-    private Set<Character> files = new HashSet<>(Set.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
-    private Set<Character> rank=new HashSet<>(Set.of('1','2','3','4','5','6','7','8'));
-    private Set<Character> pieces=new HashSet<>(Set.of('N','B'));
-
-    public boolean isMoveSyntaxRight(String move){
+    private static Set<Character> files = new HashSet<>(Set.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+    private static Set<Character> rank=new HashSet<>(Set.of('1','2','3','4','5','6','7','8'));
+    private static Set<Character> pieces=new HashSet<>(Set.of('N','B'));
+    public static String[] col={"white","black"};
+    public static boolean isMoveSyntaxRight(String move){
         if(move.length()==2){
             return files.contains(move.charAt(0))&&rank.contains(move.charAt(1));
         }
@@ -124,7 +128,6 @@ public class PgnParser {
         }
         return true;
     }
-
     private static boolean isValidUrl(String url) {
         try {
             new java.net.URL(url);
@@ -299,22 +302,105 @@ public class PgnParser {
             return false;
         }
 
-
         String content = st.substring(9, st.length() - 2);
-
 
         if (!content.matches("1-0|0-1|1/2-1/2")) {
             System.out.println("Error: Invalid result format. Allowed values are: \"1-0\", \"0-1\", \"1/2-1/2\"");
             System.out.println("Your input was: \"" + content + "\"");
             return false;
         }
-
         return true;
     }
+    public static List<List<String>> parseChessMoves(String moves) {
+        List<List<String>> movePairs = new ArrayList<>();
 
-  public boolean ParsePGN(String game){
-      return false;
-  }
+        String cleaned = moves.replaceAll("\\d+\\.\\s*", "");
 
-  
+
+        String[] moveTokens = cleaned.split("\\s+");
+
+        for (int i = 0; i < moveTokens.length; i += 2) {
+            List<String> pair = new ArrayList<>();
+            pair.add(moveTokens[i]);
+
+            if (i + 1 < moveTokens.length) {
+                pair.add(moveTokens[i + 1]);
+            } else {
+                pair.add(null);
+            }
+            movePairs.add(pair);
+        }
+
+        return movePairs;
+    }
+    public static boolean ParseChessGame(String game){
+        boolean res=true;
+        List<List<String>> moves=parseChessMoves(game);
+        for(int i=0;i<moves.size();i++){
+            for(int j=0;j<2;j++){
+               if(!isMoveSyntaxRight(moves.get(i).get(j))){
+                   System.out.println("Error:move "+(i+1)+"for "+col[j]+" has syntax problem!");
+                   res=false;
+               }
+               //if(condition){expression res=false;}
+            }
+        }
+        return res;
+    }
+
+    private int[] notationToCoordinates(String square) {
+        int file = square.charAt(0) - 'a';
+        int rank = 8 - Character.getNumericValue(square.charAt(1));
+        return new int[]{rank, file};
+    }
+
+    public static boolean ParsePGN(String gamePath) {
+        BufferedReader reader = null;
+        try {
+            boolean res = true;
+            int count = 0;
+            reader = new BufferedReader(new FileReader(gamePath));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                if (count == 0) {
+                    res = res && eventLine(line);
+                } else if (count == 1) {
+                    res = res && siteLine(line);
+                } else if (count == 2) {
+                    res = res && dateLine(line);
+                } else if (count == 3) {
+                    res = res && whiteLine(line);
+                } else if (count == 4) {
+                    res = res && blackLine(line);
+                } else if (count == 5) {
+                    res = res && resultLine(line);
+                } else if (count == 6) {
+                    res = res && ParseChessGame(line);
+                } else {
+                    res = false;
+                    System.out.println("Game moves should be on the same line. Additional content found!");
+                    break;
+                }
+                count++;
+
+            }
+            return (count>6) && res;
+        } catch (Exception e) {
+            System.out.println("Error parsing PGN file: " + e.getMessage());
+            return false;
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (Exception e) {
+                System.err.println("Error closing file: " + e.getMessage());
+            }
+        }
+    }
+
+
 }
